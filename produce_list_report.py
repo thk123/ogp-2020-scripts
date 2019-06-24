@@ -102,7 +102,7 @@ def produce_email(board):
     this_week = trello_utility.get_list('This week', board)
     for card in this_week.list_cards():
         if card.labels and event_label in card.labels:
-            report.add_event_card(card.name)
+            report.add_event_card(card)
         else:
             report.add_week_card(card)
 
