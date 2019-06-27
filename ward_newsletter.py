@@ -1,5 +1,6 @@
 import datetime
 
+import election_utility
 import trello_utility
 
 
@@ -18,10 +19,10 @@ def ward_newsletter_name(delivery_date):
 
 
 def get_temp_list(board, goal_name):
-    if not trello_utility.get_list(board, goal_name):
+    if not trello_utility.get_list(goal_name, board):
         return board.add_list(goal_name)
     else:
-        return trello_utility.get_list(goal_name)
+        return trello_utility.get_list(goal_name, board)
 
 
 def produce_leaflet_dependency(start_delivery_date):
@@ -57,20 +58,44 @@ def add_prereqs(card, prereqs, board, goal_label, list):
     dependency_cards = []
     for prereq in prereqs:
         prereq_card = list.add_card(prereq.name)
+        prereq_card.set_due(prereq.due_date)
         prereq_card.add_label(goal_label)
+        prereq_card.set_description("Start work: " + str(prereq.start_date))
         add_prereqs(prereq_card, prereq.prereqs, board, goal_label, list)
         dependency_cards.append(prereq_card.url)
+        insert_before_card = get_insert_position(prereq.start_date, board)
+        prereq_card.set_pos(insert_before_card.pos - 1)
 
     card.add_checklist('TODO', dependency_cards)
 
 
+def get_insert_position(date, board):
+    """
+    Get the Date card that is the fist card after the date
+    :param date: The date to find the date after
+    :param board: Trello board to look for date cards in
+    :return: The Date card
+    """
+    backlog = trello_utility.get_list("Backlog", board)
+    cards = backlog.list_cards()
+    date_cards = list(filter(election_utility.is_date_card, cards))
+    after_date_cards = list(filter(lambda card: card.due_date.date() > date, date_cards))
+    print(after_date_cards)
+    smallest_date_card = min(after_date_cards, key=lambda card: card.due_date)
+    return smallest_date_card
+
+
 def create_ward_newsletter(delivery_date, board):
     goal_name = ward_newsletter_name(delivery_date)
-    temp_list = get_temp_list(board, goal_name)
-    goal_card = temp_list.add_card(goal_name)
+    backlog = trello_utility.get_list("Backlog", board)
+    goal_card = backlog.add_card(goal_name)
     goal_card.add_label(trello_utility.get_label('Goal', board))
 
     goal_label = trello_utility.create_label(goal_name, "null", board)
     goal_card.add_label(goal_label)
+    goal_card.set_due(delivery_date)
+    date_card = get_insert_position(delivery_date, board)
+    goal_card.set_pos(date_card.pos - 1)
 
     prereqs = [leaflet_dependencies(delivery_date)]
+    add_prereqs(goal_card, prereqs, board, goal_label, backlog)
