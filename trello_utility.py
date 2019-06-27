@@ -1,4 +1,7 @@
-def get_list(name, board):
+import trello
+
+
+def get_list(name: str, board: trello.Board) -> trello.List:
     """
     Find  an open Trello list of the specified name
     :param name: The name of the list
@@ -19,7 +22,6 @@ def get_label(name, board):
     :return:
     """
     for label in board.get_labels():
-        print(label)
         if label.name == name:
             return label
     return None
@@ -34,3 +36,12 @@ def create_label(name, colour, board):
     :return:
     """
     return board.add_label(name, colour)
+
+
+def get_cards_with_label(label: trello.Label, board: trello.Board):
+    return filter(lambda card: card.labels and label in card.labels, board.get_cards())
+
+
+def archive_cards(cards):
+    for card in cards:
+        card.set_closed(True)
