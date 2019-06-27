@@ -1,4 +1,5 @@
 import klembord
+import trello
 
 import produce_list_report
 import trello_utility
@@ -19,6 +20,11 @@ def add_prereqs(card, prereqs, board, goal_label):
         dependency_cards.append(prereq_card.url)
 
     card.add_checklist('TODO', dependency_cards)
+
+
+def is_date_card(card: trello.Card):
+    date_label = trello_utility.get_label("Date", card.board)
+    return date_label in card.labels
 
 
 def copy_card(card):
