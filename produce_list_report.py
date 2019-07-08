@@ -55,6 +55,8 @@ class Report:
 
 
 def card_list(cards, title, with_date=False):
+    if len(cards) == 0:
+        return ""
     content = ""
     content += "<h2>" + title + "</h2>\n"
     for card in cards:
@@ -68,6 +70,7 @@ class WeeklyUpdate:
     def __init__(self):
         self.completed = []
         self.this_week = []
+        self.on_going = []
         self.blocked = []
         self.events = []
 
@@ -76,6 +79,9 @@ class WeeklyUpdate:
 
     def add_week_card(self, card):
         self.this_week.append(card)
+
+    def add_on_going_card(self, card):
+        self.on_going.append(card)
 
     def add_blocked_card(self, card):
         self.blocked.append(card)
@@ -87,7 +93,8 @@ class WeeklyUpdate:
         content = ""
         content += card_list(self.events, "Upcoming Events", True)
         content += card_list(self.this_week, "This Week")
-        content += card_list(self.blocked, "Blocked")
+        content += card_list(self.on_going, "On going")
+        content += card_list(self.blocked, "Help needed!")
         content += card_list(self.completed, "Completed")
         content += "<i>If you're receiving this and you don't think you should be  - let me know!</i>"
         return content
@@ -106,9 +113,13 @@ def produce_email(board):
         else:
             report.add_week_card(card)
 
-    blocked = trello_utility.get_list('Blocked / On going', board)
+    blocked = trello_utility.get_list('On going', board)
     for card in blocked.list_cards():
         report.add_blocked_card(card)
+
+    on_going = trello_utility.get_list('On going', board)
+    for card in on_going.list_cards():
+        report.add_on_going_card(card)
 
     done = trello_utility.get_list('Done', board)
     print(done)
