@@ -5,25 +5,6 @@ import election_utility
 import trello_utility
 
 
-# def find_pos(backlog: trello.List, date : datetime.date):
-#     pos = 0
-#     for card in backlog.list_cards():
-#         pos = card.pos
-#         pattern = 'Start work: (%d%d%d%d-%d%d-%d%d)'
-#         match = re.search(pattern, card.description)
-#         if match:
-#             card_date_str = match.group(1)
-#             card_start_date = datetime.strptime(card_date_str, '%Y-%m-%d')
-#             if card_start_date.date() > date:
-#                 break
-#         elif card.due_date:
-#             print(card.due_date.date())
-#             print(date)
-#             if card.due_date.date() > date:
-#                 break
-#     return pos - 1
-
-
 def create_dates_interactive(board):
     """
     (Interactive) Creates a range of Date cards on the trello board
@@ -57,8 +38,6 @@ def create_dates(board, start_date, end_date, frequency):
         try:
             print("Making " + str(date))
             new_card = backlog.add_card(str(date))
-            # pos = find_pos(backlog, date.date())
-            # print("Pos: " + str(pos))
             new_card.add_label(date_label)
             new_card.set_due(date)
             # new_card.set_pos(pos)

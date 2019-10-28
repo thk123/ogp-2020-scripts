@@ -1,6 +1,5 @@
 import datetime
 
-import election_utility
 import trello_utility
 
 
@@ -63,22 +62,6 @@ def add_prereqs(card, prereqs, board, goal_label, list):
     card.add_checklist('TODO', dependency_cards)
 
 
-def get_insert_position(date, board):
-    """
-    Get the Date card that is the fist card after the date
-    :param date: The date to find the date after
-    :param board: Trello board to look for date cards in
-    :return: The Date card
-    """
-    backlog = trello_utility.get_list("Backlog", board)
-    cards = backlog.list_cards()
-    date_cards = list(filter(election_utility.is_date_card, cards))
-    after_date_cards = list(filter(lambda card: card.due_date.date() > date, date_cards))
-    print(after_date_cards)
-    smallest_date_card = min(after_date_cards, key=lambda card: card.due_date)
-    return smallest_date_card
-
-
 def create_ward_newsletter(delivery_date, board, prefix):
     goal_name = ward_newsletter_name(delivery_date, prefix)
     backlog = trello_utility.get_list("Backlog", board)
@@ -88,8 +71,6 @@ def create_ward_newsletter(delivery_date, board, prefix):
     goal_label = trello_utility.create_label(goal_name, "null", board)
     goal_card.add_label(goal_label)
     goal_card.set_due(delivery_date)
-    # date_card = get_insert_position(delivery_date, board)
-    # goal_card.set_pos(date_card.pos - 1)
 
     prereqs = [leaflet_dependencies(delivery_date)]
     add_prereqs(goal_card, prereqs, board, goal_label, backlog)

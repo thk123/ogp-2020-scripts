@@ -38,7 +38,7 @@ def create_action_day(action_day, board, ward):
     goal_card.add_label(goal_label)
     goal_card.add_label(trello_utility.get_label('Event', board))
     goal_card.set_due(action_day)
-    # goal_card.set_pos(action_day.timestamp())
+    goal_card.set_pos(action_day.timestamp())
 
     prereqs = [action_day_dependencies(action_day)]
     ward_newsletter.add_prereqs(goal_card, prereqs, board, goal_label, backlog)

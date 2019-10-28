@@ -23,8 +23,6 @@ def produce_sorry_we_missed_you_card(board):
     goal_label = trello_utility.create_label(goal_name, "null", board)
     goal_card.add_label(goal_label)
     goal_card.set_due(delivery_date)
-    # date_card = ward_newsletter.get_insert_position(delivery_date, board)
-    # goal_card.set_pos(date_card.pos - 1)
 
     prereqs = [Prereq("Print out cards", delivery_date, delivery_date - print_time, [
         Prereq("Design cards", design_due, photo_due, [
