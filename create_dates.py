@@ -1,6 +1,8 @@
 import datetime
 import re
 
+import trello
+
 import election_utility
 import trello_utility
 
@@ -18,6 +20,7 @@ def create_dates_interactive(board):
 
 
 def card_position_date(card):
+    #          Start work: 2019-08-25
     pattern = 'Start work: (%d%d%d%d-%d%d-%d%d)'
     match = re.search(pattern, card.description)
     if match:
@@ -34,18 +37,33 @@ def create_dates(board, start_date, end_date, frequency):
     backlog = trello_utility.get_list('Backlog', board)
     date_label = trello_utility.get_label('Date', board)
     while date < end_date:
-        card_made = False
-        try:
-            print("Making " + str(date))
-            new_card = backlog.add_card(str(date))
-            new_card.add_label(date_label)
-            new_card.set_due(date)
-            # new_card.set_pos(pos)
-            date += datetime.timedelta(days=frequency)
-            card_made = True
-        finally:
-            if not card_made:
-                new_card.delete()
+        create_date(board, date)
+        date += datetime.timedelta(days=frequency)
+
+
+def date_pos(date: datetime.date):
+    dt = datetime.datetime.combine(date, datetime.time(1, 0))
+    return dt.timestamp()
+
+
+def card_pos(start_date: datetime.date):
+    dt = datetime.datetime.combine(start_date, datetime.time(12, 0))
+    return dt.timestamp()
+
+
+def create_date(board: trello.Board, date: datetime.date, custom_name=None):
+    backlog = trello_utility.get_list('Backlog', board)
+    date_label = trello_utility.get_label('Date', board)
+    if not custom_name:
+        custom_name = str(date)
+
+    new_card = backlog.add_card(custom_name)
+    try:
+        new_card.add_label(date_label)
+        new_card.set_due(date)
+        new_card.set_pos(date_pos(date))
+    except:
+        new_card.delete()
 
 
 def sort_backlog(board):
@@ -55,14 +73,9 @@ def sort_backlog(board):
     for card in backlog.list_cards():
         pos = card.pos
         if not election_utility.is_date_card(card):
-            pattern = 'Start work: (%d%d%d%d-%d%d-%d%d)'
-            match = re.search(pattern, card.description)
-            if match:
-                card_date_str = match.group(1)
-                card_start_date = datetime.strptime(card_date_str, '%Y-%m-%d')
-                pos = card_start_date.timestamp()
-            elif card.due_date:
-                pos = card.due_date.timestamp()
+            card_date = card_position_date(card)
+            if card_date:
+                pos = card_date.timestamp()
             else:
                 pos = last_pos + 1
         else:
@@ -93,7 +106,8 @@ def sort_dates(board):
 
 def position_card(board, card):
     if election_utility.is_date_card(card):
-        print('Not positioning date card yet')
+        date = card.due_date
+        card.set_pos(date_pos(date))
     else:
         date = card_position_date(card)
         if date:
@@ -111,19 +125,10 @@ def sort_board(board):
             dt = datetime.datetime.combine(dd, datetime.time(1, 0))
             pos = dt.timestamp()
         else:
-            #          Start work: 2019-08-25
-            pattern = r'Start work: (\d\d\d\d-\d\d-\d\d)'
-            print(card.desc)
-            match = re.search(pattern, card.desc)
-            if match:
-                print('match: ' + match.group(1))
-                card_date_str = match.group(1)
-                card_start_date = datetime.datetime.strptime(card_date_str, '%Y-%m-%d')
-                pos = datetime.datetime.combine(card_start_date.date(), datetime.time(12, 0)).timestamp()
-            elif card.due_date:
-                pos = card.due_date.timestamp()
+            card_date = card_position_date(card)
+            if card_date:
+                pos = datetime.datetime.combine(card_date.date(), datetime.time(12, 0)).timestamp()
             else:
                 pos = last_pos + 1
-        print("setting " + card.name + " to " + str(pos))
         card.set_pos(pos)
         last_pos = pos

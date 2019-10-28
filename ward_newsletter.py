@@ -1,6 +1,7 @@
 import datetime
 
 import trello_utility
+from create_dates import position_card
 
 
 class Prereq:
@@ -74,3 +75,4 @@ def create_ward_newsletter(delivery_date, board, prefix):
 
     prereqs = [leaflet_dependencies(delivery_date)]
     add_prereqs(goal_card, prereqs, board, goal_label, backlog)
+    position_card(board, goal_card)
