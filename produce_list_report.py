@@ -1,3 +1,7 @@
+import urllib
+
+import trello
+
 import trello_utility
 
 
@@ -5,6 +9,34 @@ def card_text(card, with_date=False):
     if with_date:
         return '<a href=' + card.url + '>' + card.name + ' (' + str(card.due_date.date()) + ')</a>'
     return '<a href=' + card.url + '>' + card.name + '</a>'
+
+
+def label_link(label: trello.Label):
+    name_string = urllib.parse.quote(label.name)
+    return 'https://trello.com/b/6o2TiKE8/2020-city-council-elections?menu=filter&filter=label:' + name_string
+
+
+def html_link(name, url):
+    return '<a href="' + url + '">' + name + '</a>'
+
+
+def print_label(label: trello.Label):
+    colours = {
+        'yellow': 'd9b51c',
+        'purple': '89609e',
+        'blue': '0079bf',
+        'red': 'b04632',
+        'green': '61bd4f',
+        'orange': 'cd8313',
+        'black': '091e42',
+        'sky': '00c2e0',
+        'pink': 'ff78cb',
+        'lime': '4bbf6b',
+        'null': '97a0af'
+    }
+
+    format_wrapper = '<i><span style="color:white;background-color: ' + colours[label.color] + '">'
+    return '<a href="' + label_link(label) + '">' + format_wrapper + label.name + '</span></i></a>'
 
 
 class ReportEntry:
@@ -17,11 +49,13 @@ class ReportEntry:
         content = "<h3>" + self.date + "</h3>"
         for goal in self.goals:
             content += "<p><b>Goal: "
-            content += self.card_text(goal)
+            content += card_text(goal)
             content += '</b></p>'
         for task in self.tasks:
             content += "<p>"
-            content += self.card_text(task)
+            content += card_text(task)
+            if task.labels and len(task.labels) == 1:
+                content += " (" + print_label(task.labels[0]) + ")"
             content += "</p>"
         return content
 
@@ -60,7 +94,14 @@ def card_list(cards, title, with_date=False):
     content = ""
     content += "<h2>" + title + "</h2>\n"
     for card in cards:
-        content += "<li>" + card_text(card, with_date) + "</li>\n"
+        content += "<li>" + card_text(card, with_date)
+        if card.labels:
+            relevant_labels = list(
+                filter(lambda label: label.name != 'Goal' and label.name != 'Date' and label.name != 'Event',
+                       card.labels))
+            if relevant_labels and len(relevant_labels) == 1:
+                content += " (<i>" + html_link(relevant_labels[0].name, label_link(relevant_labels[0])) + "</i>)"
+        content += "</li>\n"
     content += "</ul>\n"
     return content
 
@@ -94,7 +135,7 @@ class WeeklyUpdate:
         content += card_list(self.events, "Upcoming Events", True)
         content += card_list(self.this_week, "This Week")
         content += card_list(self.on_going, "On going")
-        content += card_list(self.blocked, "Help needed!")
+        content += card_list(self.blocked, "Help Needed!")
         content += card_list(self.completed, "Completed")
         content += "<i>If you're receiving this and you don't think you should be  - let me know!</i>"
         return content
@@ -106,18 +147,18 @@ def produce_email(board):
     event_label = trello_utility.get_label('Event', board)
     report = WeeklyUpdate()
 
-    this_week = trello_utility.get_list('This week', board)
+    this_week = trello_utility.get_list('This Week', board)
     for card in this_week.list_cards():
         if card.labels and event_label in card.labels:
             report.add_event_card(card)
         else:
             report.add_week_card(card)
 
-    blocked = trello_utility.get_list('On going', board)
+    blocked = trello_utility.get_list('Help Needed!', board)
     for card in blocked.list_cards():
         report.add_blocked_card(card)
 
-    on_going = trello_utility.get_list('On going', board)
+    on_going = trello_utility.get_list('On Going', board)
     for card in on_going.list_cards():
         report.add_on_going_card(card)
 
@@ -134,14 +175,14 @@ def produce_email(board):
     return report
 
 
-def produce_list_report(board, list):
+def produce_list_report(board, backlog):
     date_label = trello_utility.get_label('Date', board)
     goal_label = trello_utility.get_label('Goal', board)
     report = Report()
-    for card in list.list_cards():
-        if (date_label in card.labels):
+    for card in backlog.list_cards():
+        if card.labels and date_label in card.labels:
             report.add_date(card.name)
-        elif goal_label in card.labels:
+        elif card.labels and goal_label in card.labels:
             report.add_goal_card(card)
         else:
             report.add_regular_card(card)

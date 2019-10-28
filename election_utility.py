@@ -24,7 +24,10 @@ def add_prereqs(card, prereqs, board, goal_label):
 
 def is_date_card(card: trello.Card):
     date_label = trello_utility.get_label("Date", card.board)
-    return date_label in card.labels
+    if card.labels:
+        return date_label in card.labels
+    else:
+        return False
 
 
 def copy_card(card):

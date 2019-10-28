@@ -5,24 +5,18 @@ import trello_utility
 
 
 class Prereq:
-    def __init__(self, name, due_date, start_date, prereqs):
+    def __init__(self, name, due_date: datetime.date, start_date: datetime.date, prereqs, description=''):
         self.name = name
         self.due_date = due_date
         self.start_date = start_date
         self.prereqs = prereqs
+        self.desc = description
 
 
-def ward_newsletter_name(delivery_date):
+def ward_newsletter_name(delivery_date, prefix):
     month = delivery_date.strftime("%B")
     year = str(delivery_date.year)
-    return month + " " + year + " Ward Newsletter"
-
-
-def get_temp_list(board, goal_name):
-    if not trello_utility.get_list(goal_name, board):
-        return board.add_list(goal_name)
-    else:
-        return trello_utility.get_list(goal_name, board)
+    return prefix + ' ' + month + " " + year + " Ward Newsletter"
 
 
 def produce_leaflet_dependency(start_delivery_date):
@@ -60,11 +54,11 @@ def add_prereqs(card, prereqs, board, goal_label, list):
         prereq_card = list.add_card(prereq.name)
         prereq_card.set_due(prereq.due_date)
         prereq_card.add_label(goal_label)
-        prereq_card.set_description("Start work: " + str(prereq.start_date))
+        prereq_card.set_description("Start work: " + str(prereq.start_date) + '\n\n' + prereq.desc)
         add_prereqs(prereq_card, prereq.prereqs, board, goal_label, list)
         dependency_cards.append(prereq_card.url)
-        insert_before_card = get_insert_position(prereq.start_date, board)
-        prereq_card.set_pos(insert_before_card.pos - 1)
+        pos = datetime.datetime.combine(prereq.start_date, datetime.time(12, 0)).timestamp()
+        prereq_card.set_pos(pos)
 
     card.add_checklist('TODO', dependency_cards)
 
@@ -85,8 +79,8 @@ def get_insert_position(date, board):
     return smallest_date_card
 
 
-def create_ward_newsletter(delivery_date, board):
-    goal_name = ward_newsletter_name(delivery_date)
+def create_ward_newsletter(delivery_date, board, prefix):
+    goal_name = ward_newsletter_name(delivery_date, prefix)
     backlog = trello_utility.get_list("Backlog", board)
     goal_card = backlog.add_card(goal_name)
     goal_card.add_label(trello_utility.get_label('Goal', board))
@@ -94,8 +88,8 @@ def create_ward_newsletter(delivery_date, board):
     goal_label = trello_utility.create_label(goal_name, "null", board)
     goal_card.add_label(goal_label)
     goal_card.set_due(delivery_date)
-    date_card = get_insert_position(delivery_date, board)
-    goal_card.set_pos(date_card.pos - 1)
+    # date_card = get_insert_position(delivery_date, board)
+    # goal_card.set_pos(date_card.pos - 1)
 
     prereqs = [leaflet_dependencies(delivery_date)]
     add_prereqs(goal_card, prereqs, board, goal_label, backlog)
