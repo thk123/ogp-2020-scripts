@@ -21,11 +21,11 @@ def create_dates_interactive(board):
 
 def card_position_date(card):
     #          Start work: 2019-08-25
-    pattern = 'Start work: (%d%d%d%d-%d%d-%d%d)'
+    pattern = r'Start work: (\d\d\d\d-\d\d-\d\d)'
     match = re.search(pattern, card.description)
     if match:
         card_date_str = match.group(1)
-        card_start_date = datetime.strptime(card_date_str, '%Y-%m-%d')
+        card_start_date = datetime.datetime.strptime(card_date_str, '%Y-%m-%d')
         return card_start_date
     elif card.due_date:
         return card.due_date
