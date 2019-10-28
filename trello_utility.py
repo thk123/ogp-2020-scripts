@@ -1,3 +1,5 @@
+import random
+
 import trello
 
 
@@ -26,6 +28,11 @@ def get_label(name, board):
             return label
     return None
 
+
+def random_goal_colour():
+    # removed green, black and red as used for goals, dates and events respectively
+    colours = ['yellow', 'purple', 'blue', 'orange', 'sky', 'pink', 'lime']
+    return random.choice(colours)
 
 def create_label(name, colour, board):
     """
