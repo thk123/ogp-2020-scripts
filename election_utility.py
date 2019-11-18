@@ -15,6 +15,8 @@ def copy_email_to_klipboard(board):
 
 def is_date_card(card: trello.Card):
     date_label = trello_utility.get_label("Date", card.board)
+    if not date_label:
+        raise Exception("Board doesn't have date label")
     if card.labels:
         return date_label in card.labels
     else:
