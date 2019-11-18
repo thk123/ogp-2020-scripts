@@ -27,10 +27,7 @@ def target_letter_dependencies(delivery_date):
                   delivery_date,
                   start_delivery,
                   [Prereq("Print letters", start_delivery, ready_for_print_deadline, [
-                      Prereq("Design letters", ready_for_print_deadline, ready_for_print_deadline, [
-                          Prereq("Decide what letter to do", ready_for_design_deadline,
-                                 ready_for_design_deadline - decision_time, [])
-                      ])
+                      Prereq("Design letters", ready_for_print_deadline, ready_for_print_deadline, [])
                   ]),
                    Prereq("Work out how will be delivered", start_delivery, start_delivery - round_prep_window, [])
                    ])
@@ -50,3 +47,5 @@ def create_targetted_letter(delivery_date: datetime.date, board, prefix, descrip
 
     prereqs = [target_letter_dependencies(delivery_date)]
     ward_newsletter.add_prereqs(goal_card, prereqs, board, goal_label, backlog)
+
+    return goal_card
