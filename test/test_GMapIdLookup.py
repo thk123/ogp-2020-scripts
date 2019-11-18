@@ -11,6 +11,7 @@ class TestGMapIdLookup(TestCase):
     def test_id_of_place(self):
         gmap = GMapIdLookup(self.gmap_key())
         self.assertEqual(gmap.id_of_place("3 Campbell Road, Oxford"), 'ChIJe_70IxbBdkgRPnzclYeX0Jo')
+        self.assertEqual(gmap.cache['3 Campbell Road, Oxford'], 'ChIJe_70IxbBdkgRPnzclYeX0Jo')
         self.assertNotEqual(gmap.id_of_place("19 Clive Road Flat 1, Oxford"),
                             gmap.id_of_place("19 Clive Road Flat 3, Oxford"))
 
@@ -18,3 +19,9 @@ class TestGMapIdLookup(TestCase):
         gmap = GMapIdLookup(self.gmap_key())
         with self.assertRaises(InvalidPlaceException):
             gmap.id_of_place('Nonsense Street, Liverpool')
+
+    def test_cache(self):
+        gmap = GMapIdLookup(self.gmap_key())
+        gmap.load_cache('test_cache.csv')
+        self.assertEqual(gmap.id_of_place('13 Road, Oxford'), 'abc123')
+        self.assertEqual(gmap.id_of_place('Another, Addres'), 'anc$')
