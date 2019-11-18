@@ -42,7 +42,7 @@ def create_targetted_letter(delivery_date: datetime.date, board, prefix, descrip
     goal_card = backlog.add_card(letter_name)
     goal_card.add_label(trello_utility.get_label('Goal', board))
 
-    goal_label = trello_utility.create_label(letter_name, "null", board)
+    goal_label = trello_utility.create_label(letter_name, trello_utility.random_goal_colour(), board)
     goal_card.add_label(goal_label)
     goal_card.set_due(delivery_date)
     goal_card.set_pos(card_pos(delivery_date))
