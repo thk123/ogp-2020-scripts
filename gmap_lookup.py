@@ -1,4 +1,5 @@
 import csv
+import os
 
 import googlemaps
 
@@ -29,10 +30,11 @@ class GMapIdLookup:
                 cache_file.write(str(key) + ',' + str(value) + '\n')
 
     def load_cache(self, path):
-        with open(path, 'r') as csv_file:
-            parsed_csv = csv.reader(csv_file)
-            for row in parsed_csv:
-                self.cache[row[0]] = row[1]
+        if os.path.exists(path):
+            with open(path, 'r') as csv_file:
+                parsed_csv = csv.reader(csv_file)
+                for row in parsed_csv:
+                    self.cache[row[0]] = row[1]
 
     def __del__(self):
         self.gmaps.session.close()

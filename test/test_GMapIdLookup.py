@@ -25,3 +25,7 @@ class TestGMapIdLookup(TestCase):
         gmap.load_cache('test_cache.csv')
         self.assertEqual(gmap.id_of_place('13 Road, Oxford'), 'abc123')
         self.assertEqual(gmap.id_of_place('Another, Addres'), 'anc$')
+
+    def test_invalidcache(self):
+        gmap = GMapIdLookup(self.gmap_key())
+        gmap.load_cache('nonsense.csv')
