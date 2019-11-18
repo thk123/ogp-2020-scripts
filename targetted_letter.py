@@ -2,6 +2,7 @@ import datetime
 
 import trello_utility
 import ward_newsletter
+from create_dates import card_pos
 from ward_newsletter import Prereq
 
 
@@ -35,7 +36,7 @@ def target_letter_dependencies(delivery_date):
                    ])
 
 
-def create_targetted_letter(delivery_date, board, prefix):
+def create_targetted_letter(delivery_date: datetime.date, board, prefix, description=''):
     letter_name = target_letter_newsletter_name(delivery_date, prefix)
     backlog = trello_utility.get_list("Backlog", board)
     goal_card = backlog.add_card(letter_name)
@@ -44,6 +45,8 @@ def create_targetted_letter(delivery_date, board, prefix):
     goal_label = trello_utility.create_label(letter_name, "null", board)
     goal_card.add_label(goal_label)
     goal_card.set_due(delivery_date)
+    goal_card.set_pos(card_pos(delivery_date))
+    goal_card.set_description(description)
 
     prereqs = [target_letter_dependencies(delivery_date)]
     ward_newsletter.add_prereqs(goal_card, prereqs, board, goal_label, backlog)
