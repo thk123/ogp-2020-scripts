@@ -17,7 +17,7 @@ class TestGMapIdLookup(TestCase):
 
     def test_awkward(self):
         gmap = GMapIdLookup(self.gmap_key())
-        gmap.id_of_place('7 Isis Court Cornwallis Road, Oxford')
+        gmap.id_of_place('13 Isis Court Cornwallis Road, Oxford')
         gmap.id_of_place('Flat 3 Withywind Beauchamp Lane, Oxford')
 
     def test_invalid_place(self):

@@ -8,6 +8,7 @@ class InvalidPlaceException(Exception):
     def __init__(self, address_string):
         Exception.__init__(self, 'Unknown address: ' + address_string)
 
+acceptable_address_kinds = ['GEOMETRIC_CENTER', 'ROOFTOP', 'STREET_ADDRESS']
 
 class GMapIdLookup:
     def __init__(self, key):
@@ -21,7 +22,7 @@ class GMapIdLookup:
         if len(result) >= 1:
             if 'partial_match' in result[0] and result[0]['partial_match']:
                 print('Warning: partial match: ' + address_string)
-                if not result[0]['geometry']['location_type'] == 'GEOMETRIC_CENTER':
+                if not result[0]['geometry']['location_type'] in acceptable_address_kinds:
                     raise InvalidPlaceException(address_string)
             self.cache[address_string] = result[0]['place_id']
             return result[0]['place_id']
