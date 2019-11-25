@@ -18,10 +18,13 @@ class GMapIdLookup:
         if address_string in self.cache:
             return self.cache[address_string]
         result = self.gmaps.geocode(address_string)
-        if len(result) == 1:
-            if not ('partial_match' in result[0] and result[0]['partial_match']):
-                self.cache[address_string] = result[0]['place_id']
-                return result[0]['place_id']
+        if len(result) >= 1:
+            if 'partial_match' in result[0] and result[0]['partial_match']:
+                print('Warning: partial match: ' + address_string)
+                if not result[0]['geometry']['location_type'] == 'GEOMETRIC_CENTER':
+                    raise InvalidPlaceException(address_string)
+            self.cache[address_string] = result[0]['place_id']
+            return result[0]['place_id']
         raise InvalidPlaceException(address_string)
 
     def save_cache(self, path):
