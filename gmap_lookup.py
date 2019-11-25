@@ -26,13 +26,13 @@ class GMapIdLookup:
 
     def save_cache(self, path):
         with open(path, 'w') as cache_file:
-            for key, value in self.cache:
-                cache_file.write(str(key) + ',' + str(value) + '\n')
+            for key in self.cache:
+                cache_file.write(str(key) + '|' + str(self.cache[key]) + '\n')
 
     def load_cache(self, path):
         if os.path.exists(path):
             with open(path, 'r') as csv_file:
-                parsed_csv = csv.reader(csv_file)
+                parsed_csv = csv.reader(csv_file, delimiter='|')
                 for row in parsed_csv:
                     self.cache[row[0]] = row[1]
 
