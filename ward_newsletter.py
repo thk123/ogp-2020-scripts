@@ -1,5 +1,6 @@
 import datetime
 
+import create_dates
 import trello_utility
 from create_dates import position_card
 
@@ -84,7 +85,7 @@ def add_prereqs(card, prereqs, board, goal_label, list):
         prereq_card = list.add_card(prereq.name)
         prereq_card.set_due(prereq.due_date)
         prereq_card.add_label(goal_label)
-        prereq_card.set_description("Start work: " + str(prereq.start_date) + '\n\n' + prereq.desc)
+        prereq_card.set_description(create_dates.start_work_prefix + str(prereq.start_date) + '\n\n' + prereq.desc)
         add_prereqs(card, prereq.prereqs, board, goal_label, list)
         dependency_cards.append(prereq_card.url)
         pos = datetime.datetime.combine(prereq.start_date, datetime.time(12, 0)).timestamp()

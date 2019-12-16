@@ -26,7 +26,7 @@ def is_date_card(card: trello.Card):
 def create_custom_card(board: trello.Board, name, due_date, start_date=None, description=None):
     backlog = trello_utility.get_list('Backlog', board)
     if start_date:
-        start_work_str = 'Start work: ' + str(start_date)
+        start_work_str = create_dates.start_work_prefix + str(start_date)
         if description:
             description = start_work_str + '\n\n' + description
         else:

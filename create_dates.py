@@ -19,9 +19,12 @@ def create_dates_interactive(board):
     return start_date, end_date, frequency
 
 
+start_work_prefix = r'Start work: '
+iso_date_format = r'(\d\d\d\d-\d\d-\d\d)'
+
 def card_start_date(card):
     #           Start work: 2019-08-25
-    pattern = r'Start work: (\d\d\d\d-\d\d-\d\d)'
+    pattern = start_work_prefix + iso_date_format
     match = re.search(pattern, card.description)
     if match:
         card_date_str = match.group(1)
