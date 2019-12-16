@@ -17,7 +17,8 @@ class TestCard_position_date(TestCase):
                          datetime.datetime(year=2020, month=1, day=1, hour=0, minute=0))
 
     def test_card_positon_date_from_invalid_desc(self):
-        # self.assertEqual(card_position_date(mock_card('Start work: 2020-15-01', None)), None)
+        with self.assertRaises(ValueError) as context:
+            card_position_date(mock_card('Start work: 2020-15-01', None))
         self.assertEqual(card_position_date(mock_card('Start work: When we\'re ready', None)), None)
 
     def test_card_positon_date_due_date(self):
