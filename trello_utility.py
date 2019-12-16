@@ -34,6 +34,7 @@ def random_goal_colour():
     colours = ['yellow', 'purple', 'blue', 'orange', 'sky', 'pink', 'lime']
     return random.choice(colours)
 
+
 def create_label(name, colour, board):
     """
     Create a new label of specified name and colour
