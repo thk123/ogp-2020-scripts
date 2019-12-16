@@ -19,14 +19,21 @@ def create_dates_interactive(board):
     return start_date, end_date, frequency
 
 
-def card_position_date(card):
-    #          Start work: 2019-08-25
+def card_start_date(card):
+    #           Start work: 2019-08-25
     pattern = r'Start work: (\d\d\d\d-\d\d-\d\d)'
     match = re.search(pattern, card.description)
     if match:
         card_date_str = match.group(1)
-        card_start_date = datetime.datetime.strptime(card_date_str, '%Y-%m-%d')
-        return card_start_date
+        start_date = datetime.datetime.strptime(card_date_str, '%Y-%m-%d')
+        return start_date
+    return None
+
+
+def card_position_date(card):
+    start_date = card_start_date(card)
+    if start_date:
+        return start_date
     elif card.due_date:
         return card.due_date
     return None
