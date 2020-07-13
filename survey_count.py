@@ -61,10 +61,12 @@ class MarkedRegisterStats:
         self.non_voters = 0
         self.postal_voters = 0
         self.voted = 0
+        self.unknown = 0
 
     def __str__(self):
-        return 'TOTAL: {0} | VOTED: {1} | PV: {2} | DNV: {3}'.format(self.marked_reg_entries, self.voted,
-                                                                     self.postal_voters, self.non_voters)
+        return 'TOTAL: {0} | VOTED: {1} | PV: {2} | DNV: {3}\nUnknown: {4}'.format(self.marked_reg_entries, self.voted,
+                                                                                   self.postal_voters, self.non_voters,
+                                                                                   self.unknown)
 
 
 def parse_marked_register(path, address_ider):
@@ -74,9 +76,13 @@ def parse_marked_register(path, address_ider):
     with open(path, 'r') as csv_file:
         marked_register = csv.DictReader(csv_file)
         for row in marked_register:
-            print(row)
             voted: Voted
-            address, voted = parse_marked_register_row(row, address_ider)
+            address = None
+            try:
+                address, voted = parse_marked_register_row(row, address_ider)
+            except gmap_lookup.InvalidPlaceException:
+                stats.unknown += 1
+                continue
             if address not in results or (address in results and results[address] == Voted.DNV):
                 results[address] = voted
             stats.marked_reg_entries += 1
@@ -109,14 +115,35 @@ def parse_survey_data(path, address_ider):
                 continue
             if row[0] and row[0] != '':
                 road_name = row[0]
-                print('Reading road: ' + road_name)
             if row[1] and row[1] != '':
                 house_number = row[1]
                 try:
                     id = id_from_road_and_number(road_name, house_number, address_ider)
                 except gmap_lookup.InvalidPlaceException:
                     print('Unable to map location: ' + address_search_string(house_number, road_name))
-                print(road_name + house_number)
+                results.append(id)
+
+    return results
+
+def parse_donnington_survey_data(path, address_ider):
+    results = []
+    with open(path, 'r') as csv_file:
+        survey_response = csv.reader(csv_file)
+        road_name = ''
+        for row in survey_response:
+            if row[0] and row[0] == 'Road name':
+                continue
+            if row[1] and row[1] != '':
+                road_name = row[1]
+            if row[0] and row[0] != '':
+                house_number = row[0]
+                try:
+                    parts = road_name.split(' ')
+                    if len(parts) == 1:
+                        road_name = road_name + " road"
+                    id = id_from_road_and_number(road_name, house_number, address_ider)
+                except gmap_lookup.InvalidPlaceException:
+                    print('Unable to map location: ' + address_search_string(house_number, road_name))
                 results.append(id)
 
     return results
@@ -124,6 +151,7 @@ def parse_survey_data(path, address_ider):
 
 def analyse_data(marked_register, survey_responses):
     pass
+
 
 def main():
     if len(sys.argv) < 2:
@@ -135,18 +163,16 @@ def main():
     marked_register_path = sys.argv[1]
     marked_register = {}
     try:
-        pass
         marked_register, marked_reg_stats = parse_marked_register(marked_register_path, address_ider)
         print(str(marked_reg_stats))
 
     finally:
-        pass
         address_ider.save_cache(cache_path)
 
     results = []
     try:
         for survey_path in sys.argv[2:]:
-            results.extend(parse_survey_data(survey_path, address_ider))
+            results.extend(parse_donnington_survey_data(survey_path, address_ider))
     finally:
         pass
         address_ider.save_cache(cache_path)
@@ -185,7 +211,6 @@ def main():
     print('surveyed_non_on_reg = ' + str(surveyed_non_on_reg))
     print('surveyed_dnv = ' + str(surveyed_dnv))
     print('survey_responses = ' + str(survey_count))
-
 
 
 if __name__ == "__main__":

@@ -60,16 +60,21 @@ class ReportEntry:
         return content
 
 
+
 class Report:
     def __init__(self):
-        self.rolling_goals = []
+        self.current_date = None
         self.rolling_tasks = []
         self.entries = []
 
     def add_date(self, text):
-        self.entries.append(ReportEntry(text, self.rolling_goals, self.rolling_tasks))
+        # if len(list(filter(lambda entry: entry.date == text, self.entries))) > 0:
+        #     return
+        if self.current_date != None:
+            self.entries.append(ReportEntry(self.current_date, self.rolling_goals, self.rolling_tasks))
         self.rolling_goals = []
         self.rolling_tasks = []
+        self.current_date = text
 
     def add_regular_card(self, card):
         self.rolling_tasks.append(card)
@@ -86,6 +91,28 @@ class Report:
         for entry in self.entries:
             content += entry.print()
         return content
+
+    def find_matching_entry(self, entry):
+        matching_entry = list(filter(lambda my_entry: my_entry.date == entry.date, self.entries))
+        if len(matching_entry) == 1:
+            return matching_entry[0]
+        if len(matching_entry) > 1:
+            raise Exception('Too many dates')
+        return None
+
+    def merge(self, report):
+        new_entries = []
+        for entry in report.entries:
+            matching_entry = self.find_matching_entry(entry)
+            if matching_entry:
+                matching_entry.goals.extend(entry.goals)
+                matching_entry.tasks.extend(entry.tasks)
+            else:
+                new_entries.append(entry)
+        self.entries.extend(new_entries)
+
+
+
 
 
 def card_list(cards, title, with_date=False):
@@ -180,6 +207,20 @@ def produce_list_report(board, backlog):
     goal_label = trello_utility.get_label('Goal', board)
     report = Report()
     for card in backlog.list_cards():
+        if card.labels and date_label in card.labels:
+            report.add_date(card.name)
+        elif card.labels and goal_label in card.labels:
+            report.add_goal_card(card)
+        else:
+            report.add_regular_card(card)
+
+    return report
+
+def produce_list_report_from_cards(cards, board):
+    date_label = trello_utility.get_label('Date', board)
+    goal_label = trello_utility.get_label('Goal', board)
+    report = Report()
+    for card in cards:
         if card.labels and date_label in card.labels:
             report.add_date(card.name)
         elif card.labels and goal_label in card.labels:

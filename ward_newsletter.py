@@ -13,6 +13,10 @@ class Prereq:
         self.prereqs = prereqs
         self.desc = description
 
+    @staticmethod
+    def from_due_and_time(name, due_date: datetime.date, duration: datetime.timedelta, prereqs, description=''):
+        return Prereq(name, due_date, due_date - duration, prereqs, description)
+
 
 def ward_newsletter_name(delivery_date, prefix):
     month = delivery_date.strftime("%B")
@@ -116,6 +120,59 @@ def create_ward_newsletter(delivery_date, board, prefix, custom_name=None):
     prereqs = [leaflet_dependencies(delivery_date)]
     add_prereqs(goal_card, prereqs, board, goal_label, backlog)
     position_card(board, goal_card)
+    return goal_card
+
+
+def create_goal_card(goal_name, board, due_date):
+    backlog = trello_utility.get_list("Backlog", board)
+    goal_card = backlog.add_card(goal_name)
+    goal_card.add_label(trello_utility.get_label('Goal', board))
+
+    goal_label = trello_utility.create_label(goal_name, trello_utility.random_goal_colour(), board)
+    goal_card.add_label(goal_label)
+    goal_card.set_due(due_date)
+
+    position_card(board, goal_card)
+    return goal_card, goal_label
+
+def create_task_card(task_name, board, start_date, due_date, description=''):
+    backlog = trello_utility.get_list("Backlog", board)
+    goal_card = backlog.add_card(task_name)
+    goal_card.set_due(due_date)
+
+    goal_card.set_description(create_dates.start_work_prefix + str(start_date) + '\n\n' + description)
+
+    position_card(board, goal_card)
+    return goal_card
+
+def create_short_campaign_literature(delivery_date, board, custom_name, description=''):
+    goal_card, goal_label = create_goal_card(custom_name, board, delivery_date)
+    goal_card.set_description(description)
+
+    print_prereq = Prereq.from_due_and_time('Print ' + custom_name, delivery_date - datetime.timedelta(days=14),
+                                            datetime.timedelta(days=7), [])
+    deliver_prereq = Prereq.from_due_and_time('Deliver ' + custom_name, delivery_date, datetime.timedelta(days=7), [])
+
+    prereqs = [print_prereq, deliver_prereq]
+    backlog = trello_utility.get_list("Backlog", board)
+    add_prereqs(goal_card, prereqs, board, goal_label, backlog)
+    position_card(board, goal_card)
+    return goal_card
+
+def create_eve_of_poll(polling_date, board):
+    goal_card, goal_label = create_goal_card('Eve of poll leaflet', board, polling_date)
+    goal_card.set_description('Small postcard with just the camapign messages. To be delivered to all voters on the '
+                              'evening before (or early morning of) polling day.')
+
+    print_prereq = Prereq.from_due_and_time('Print Eve of poll leaflet', polling_date - datetime.timedelta(days=14),
+                                            datetime.timedelta(days=7), [])
+    deliver_prereq = Prereq.from_due_and_time('Deliver eve of poll leaflet', polling_date, datetime.timedelta(days=1), [])
+
+    prereqs = [print_prereq, deliver_prereq]
+    backlog = trello_utility.get_list("Backlog", board)
+    add_prereqs(goal_card, prereqs, board, goal_label, backlog)
+    position_card(board, goal_card)
+    return goal_card
 
 
 def create_student_leaflet(delivery_date, board, prefix, custom_name=None):

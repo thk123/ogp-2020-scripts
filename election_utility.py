@@ -36,6 +36,5 @@ def create_custom_card(board: trello.Board, name, due_date, start_date=None, des
     new_card.set_due(datetime.datetime.combine(due_date, datetime.time(12, 0)))
     create_dates.position_card(board, new_card)
 
-
 def copy_card(card):
     klembord.set_with_rich_text(card.name, '<a href="' + card.url + '">' + card.name + '</a>')

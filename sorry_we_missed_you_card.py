@@ -5,8 +5,9 @@ import ward_newsletter
 from ward_newsletter import Prereq
 
 
-def produce_sorry_we_missed_you_card(board):
-    start_date = datetime.date.today() + datetime.timedelta(days=2)
+def produce_sorry_we_missed_you_card(board, start_date=None):
+    if start_date == None:
+        start_date = datetime.date.today() + datetime.timedelta(days=2)
     collect_photos_time = datetime.timedelta(days=5)
     photo_due = start_date + collect_photos_time
     design_time = datetime.timedelta(days=2)
